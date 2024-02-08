@@ -16,11 +16,8 @@ def convertImageSequenceToVideo(imagesFolder, images, outputVideoPath, fps):
     try:
         last_image = images[0]
         for image in tqdm.tqdm(images[1:]):
-            print(image)
             difference = float(image.split('_')[0]) - float(last_image.split('_')[0])
-            print(difference)
             frames = int(round(difference * fps))
-            print(frames)
             img = cv2.imread(os.path.join(imagesFolder, last_image))
             for i in range(frames):
                 video.write(img)
@@ -35,14 +32,6 @@ def convertImageSequenceToVideo(imagesFolder, images, outputVideoPath, fps):
     video.release()
     print("Video conversion complete")
 
-def getFPS(imagesFolder):
-    images = [img for img in os.listdir(imagesFolder) if not '_ai' in img]
-    images.sort(key=lambda x: int(x.split('_')[0].split('.')[0]))
-    firstImage = cv2.imread(os.path.join(imagesFolder, images[0]))
-    lastImage = cv2.imread(os.path.join(imagesFolder, images[-1]))
-    timeDifference = int(images[-1].split('_')[0].split('.')[0]) - int(images[0].split('_')[0].split('.')[0])
-    return len(images) / timeDifference
-
 parser = argparse.ArgumentParser(description='Converts a sequence of images to a video')
 parser.add_argument('folder', type=str, help='The folder containing the images')
 parser.add_argument('output', type=str, help='The output video path')
@@ -52,7 +41,6 @@ args = parser.parse_args()
 
 print("Determining FPS...")
 
-# FPS = getFPS(args.folder)
 FPS = 30
 
 print(f"Determined FPS: {FPS}")
