@@ -2,25 +2,38 @@ import argparse
 import cv2
 import os
 import tqdm
+import time
 
 # images folder is list of images with name which is epoch time of the image
 
-def convertImageSequenceToVideo(images, outputVideoPath, fps):
-    # Get the first image to get the size
-    frame = cv2.imread(os.path.join(imagesFolder, images[0]))
-    height, width, layers = frame.shape
+def convertImageSequenceToVideo(imagesFolder, images, outputVideoPath, fps):
+    # Get the first image's dimensions
+    height, width, layers = cv2.imread(filename=os.path.join(imagesFolder, images[0])).shape
     # Create a video writer object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video = cv2.VideoWriter(outputVideoPath, fourcc, fps, (width, height))
     # Add all the images to the video
     try:
-        for image in tqdm.tqdm(images):
-            video.write(cv2.imread(os.path.join(imagesFolder, image)))
+        last_image = images[0]
+        for image in tqdm.tqdm(images[1:]):
+            print(image)
+            difference = float(image.split('_')[0]) - float(last_image.split('_')[0])
+            print(difference)
+            frames = int(round(difference * fps))
+            print(frames)
+            img = cv2.imread(os.path.join(imagesFolder, last_image))
+            for i in range(frames):
+                video.write(img)
+
+            last_image = image
+
+
     except KeyboardInterrupt:
-        print("Video conversion interrupted")
+        print("Video conversion interrupted, cleaning up...")
     # Release the video writer
     cv2.destroyAllWindows()
     video.release()
+    print("Video conversion complete")
 
 def getFPS(imagesFolder):
     images = [img for img in os.listdir(imagesFolder) if not '_ai' in img]
@@ -39,7 +52,8 @@ args = parser.parse_args()
 
 print("Determining FPS...")
 
-FPS = getFPS(args.folder)
+# FPS = getFPS(args.folder)
+FPS = 30
 
 print(f"Determined FPS: {FPS}")
 
@@ -54,4 +68,4 @@ else:
 # Sort the images by name
 images.sort(key=lambda x: int(x.split('_')[0].split('.')[0]))
 
-convertImageSequenceToVideo(args.folder, args.output, FPS)
+convertImageSequenceToVideo(args.folder, images, args.output, FPS)

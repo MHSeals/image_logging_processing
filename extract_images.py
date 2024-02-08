@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import sys
+import tqdm
 
 parser = argparse.ArgumentParser(description='Extracts images from computer output')
 parser.add_argument('folder', type=str, help='The folder containing the images')
@@ -40,7 +41,7 @@ else:
     shutil.rmtree(args.output)
     os.makedirs(args.output)
 
-for image in images:
+for image in tqdm.tqdm(images):
     shutil.copy(os.path.join(args.folder, image), args.output)
 
 print("Images extracted")
